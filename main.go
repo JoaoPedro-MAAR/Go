@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	s "strings"
 )
 
 
@@ -13,6 +14,8 @@ func main() {
 	var option int
 	var a int
 	var b int
+	var types string
+	var err error
 	fmt.Println("Hello, World!")
 	outerloop: for{
 		fmt.Printf(
@@ -24,6 +27,8 @@ func main() {
 			"4 - Show Metrics\n"+
 			"5 - Safe division (Integer, Integer)\n"+
 			"6 - Clear List\n"+
+			"7 - Order List\n"+
+			"8 - Show Evens\n"+
 			"0 - Exit(Bye Bye)\n"+
 			"Option: ",
 			numbersList,
@@ -31,11 +36,17 @@ func main() {
 		fmt.Scan(&option)
 		switch option{
 			case 1:
-				numbersList = addNumbersInterface(numbersList)
+				numbersList,err = addNumbersInterface(numbersList)
+				if (err != nil){
+					fmt.Println(err)
+				}
 			case 2:
 				listNumbers(numbersList)
 			case 3:
-				numbersList = rmByIndexInterface(numbersList)
+				numbersList, err = rmByIndexInterface(numbersList)
+				if (err != nil){
+					fmt.Println(err)
+				}
 			case 4:
 				showMetrics(numbersList)
 			case 5:
@@ -52,6 +63,12 @@ func main() {
 				fmt.Println()
 			case 6:
 				numbersList = cleanList(numbersList)
+			case 7:
+				fmt.Print("Select the option Ascending [A] or Descending [D]: ")
+				fmt.Scan(&types)
+				numbersList = orderList(numbersList, types)
+			case 8:
+			    showEven(numbersList)
 			case 0:
 				break outerloop
 			default:
@@ -65,6 +82,21 @@ func main() {
 
 }
 
+func showEven(list []int) {
+	fmt.Print("[")
+	for i := 0; i < len(list); i++ {
+		if list[i] % 2 == 0{
+		fmt.Print(list[i])
+		if i < len(list) -1{
+		fmt.Print(",")
+		}
+		}
+	}
+	fmt.Print("]\n")
+
+}
+
+
 func showMetrics(list []int){
 	minimun, maximum, mean, err := staticstics(list)
 	if err == nil{
@@ -77,17 +109,23 @@ func showMetrics(list []int){
 
 }
 
-func rmByIndexInterface(list []int) []int{
+func rmByIndexInterface(list []int) ([]int, error){
 	var position int
-	fmt.Print("Digit an integer value to be added: ")
+	fmt.Print("Digit an integer value to be the index: ")
 	fmt.Scan(&position)
 	return rmByIndex(list, position)}
 
-func addNumbersInterface(list []int) []int{
+func addNumbersInterface(list []int) ([]int, error){
 	var newNumber int
 	fmt.Print("Digit an integer value to be added: ")
-	fmt.Scan(&newNumber)
-	return addNumbers(list, newNumber)
+	_, err :=fmt.Scan(&newNumber)
+    if err != nil{
+		return list,err
+	}
+	if newNumber < 0{
+		return list, errors.New("The list don't support negative numbers")
+	}
+	return addNumbers(list, newNumber), nil
 
 }
 
@@ -110,8 +148,11 @@ func listNumbers(list []int){
 
 }
 
-func rmByIndex(list []int, index int) []int {
-	return append(list[:index], list[index+1:]...)
+func rmByIndex(list []int, index int) ([]int, error) {
+	if index < 0 || index > len(list){
+		return list, errors.New("Not valid index")
+	}
+	return append(list[:index], list[index+1:]...), nil
 }
 
 
@@ -120,10 +161,7 @@ func staticstics(list []int) (int, int, float64, error){
 	if len(list) == 0{
 		return -1,-1,-1,errors.New("No data in the List")
 	}
-	copy(listCopy, list)
-	sort.Slice(listCopy, func(i, j int) bool {
-		return listCopy[i] < listCopy[j]
-	})
+	listCopy = orderList(list,"A")
 
 	minimun := listCopy[0]
 	maximum := listCopy[len(listCopy)-1]
@@ -154,5 +192,18 @@ func divide(a int, b int) (float64, error) {
 
 func cleanList(list []int) []int{
 	list = make([]int, 0)
+	return list
+}
+
+func orderList(list []int,types string )([]int){
+	if (s.ToLower(types) == "a"){
+		sort.Slice(list, func(i, j int) bool {
+		return list[i] < list[j]
+	})
+	}else if s.ToLower(types)== "d"{
+		sort.Slice(list, func(i, j int) bool {
+		return list[i] > list[j]
+	})
+	}
 	return list
 }
