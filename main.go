@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"errors"
 	"fmt"
 	"sort"
@@ -197,9 +198,7 @@ func cleanList(list []int) []int{
 
 func orderList(list []int,types string )([]int){
 	if (s.ToLower(types) == "a"){
-		sort.Slice(list, func(i, j int) bool {
-		return list[i] < list[j]
-	})
+		slices.Sort(list)
 	}else if s.ToLower(types)== "d"{
 		sort.Slice(list, func(i, j int) bool {
 		return list[i] > list[j]
